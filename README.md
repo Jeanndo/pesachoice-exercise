@@ -1,0 +1,1 @@
+# @pesachoice MIDAS HR exercises
