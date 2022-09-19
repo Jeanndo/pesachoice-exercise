@@ -1,10 +1,47 @@
-import React from "react";
+import React, { useState } from "react";
 import { LockClosedIcon } from "@heroicons/react/20/solid";
 import { NavLink } from "react-router-dom";
+import { auth } from "./../../config/firebse";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
 
 const Register = ({ isLogin, setIsLogin }) => {
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
   const handleIsLogin = () => {
     setIsLogin(!isLogin);
+  };
+
+  const handleLogin = (event) => {
+    event.preventDefault();
+    if (isLogin) {
+      signInWithEmailAndPassword(auth, formData.email, formData.password)
+        .then((userInfo) => {
+          const user = userInfo.user;
+          console.log("user", user);
+        })
+        .catch((error) => {
+          const errorMessage = error.message;
+          console.log("error", errorMessage);
+        });
+    } else {
+      createUserWithEmailAndPassword(auth, formData.email, formData.password)
+        .then((userInfo) => {
+          const user = userInfo.user;
+
+          console.log("user", user);
+        })
+        .catch((error) => {
+          const errorMessage = error.message;
+
+          console.log("error", errorMessage);
+        });
+    }
   };
 
   return (
@@ -32,8 +69,7 @@ const Register = ({ isLogin, setIsLogin }) => {
               </NavLink>
             </p>
           </div>
-          <form className="mt-8 space-y-6" action="#" method="POST">
-            <input type="hidden" name="remember" defaultValue="true" />
+          <form className="mt-8 space-y-6" onSubmit={handleLogin}>
             <div className="-space-y-px rounded-md shadow-sm">
               <div>
                 <label htmlFor="email-address" className="sr-only">
@@ -47,6 +83,13 @@ const Register = ({ isLogin, setIsLogin }) => {
                   required
                   className="relative block w-full appearance-none rounded-none rounded-t-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-orange-500 focus:outline-none focus:ring-orange-500 sm:text-sm"
                   placeholder="Email address"
+                  value={formData.email}
+                  onChange={(event) =>
+                    setFormData({
+                      ...formData,
+                      email: event.target.value,
+                    })
+                  }
                 />
               </div>
               <div>
@@ -61,6 +104,13 @@ const Register = ({ isLogin, setIsLogin }) => {
                   required
                   className="relative block w-full appearance-none rounded-none rounded-b-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-orange-500 focus:outline-none focus:ring-orange-500 sm:text-sm"
                   placeholder="Password"
+                  value={formData.password}
+                  onChange={(event) =>
+                    setFormData({
+                      ...formData,
+                      password: event.target.value,
+                    })
+                  }
                 />
               </div>
             </div>
