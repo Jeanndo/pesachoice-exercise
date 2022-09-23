@@ -1,13 +1,20 @@
 import React, { useState } from "react";
 import { LockClosedIcon } from "@heroicons/react/20/solid";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { auth } from "./../../config/firebse";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  sendPasswordResetEmail,
 } from "firebase/auth";
+import { HiEyeOff, HiEye } from "react-icons/hi";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-const Register = ({ isLogin, setIsLogin }) => {
+const Register = ({ isLogin, setIsLogin, forgotPass, setForgotPass }) => {
+  const navigate = useNavigate();
+  const [showPass, setShowPass] = useState(false);
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -15,45 +22,127 @@ const Register = ({ isLogin, setIsLogin }) => {
 
   const handleIsLogin = () => {
     setIsLogin(!isLogin);
+    setForgotPass(false);
   };
 
   const handleLogin = (event) => {
     event.preventDefault();
+
+    console.log("email", formData.email.split("@")[1]);
+
     if (isLogin) {
-      signInWithEmailAndPassword(auth, formData.email, formData.password)
-        .then((userInfo) => {
-          const user = userInfo.user;
-          console.log("user", user);
+      if (formData.email.split("@")[1] === "pesachoice.com") {
+        signInWithEmailAndPassword(auth, formData.email, formData.password)
+          .then((userInfo) => {
+            const user = userInfo.user;
+
+            if (user) {
+              toast.success("Logged in Successfully 👍🏾");
+              setFormData({
+                email: "",
+                password: "",
+              });
+              navigate("/dashboard");
+            }
+          })
+          .catch((error) => {
+            const errorMessage = error.message;
+            console.log("error", errorMessage);
+            toast.error(errorMessage.split(":")[1]);
+          });
+      } else {
+        toast.info("Only specific emails can login");
+      }
+    } else if (forgotPass) {
+      sendPasswordResetEmail(auth, formData.email)
+        .then(() => {
+          toast.success("Please check your email 👍🏾");
+          setFormData({
+            email: "",
+            password: "",
+          });
         })
         .catch((error) => {
+          const errorCode = error.code;
           const errorMessage = error.message;
-          console.log("error", errorMessage);
+          toast.error(errorMessage.split(":")[1]);
         });
     } else {
-      createUserWithEmailAndPassword(auth, formData.email, formData.password)
-        .then((userInfo) => {
-          const user = userInfo.user;
+      if (formData.email.split("@")[1] === "pesachoice.com") {
+        createUserWithEmailAndPassword(auth, formData.email, formData.password)
+          .then((userInfo) => {
+            const user = userInfo.user;
+            if (user) {
+              toast.success("Account Created 👍🏾");
+              setFormData({
+                email: "",
+                password: "",
+              });
+              navigate("/dashboard");
+            }
+          })
+          .catch((error) => {
+            const errorMessage = error.message;
 
-          console.log("user", user);
-        })
-        .catch((error) => {
-          const errorMessage = error.message;
-
-          console.log("error", errorMessage);
-        });
+            toast.error(errorMessage.split(":")[1]);
+          });
+      } else {
+        toast.info("Only specific emails can create accounts");
+      }
     }
+  };
+
+  const handleShowPassword = () => {
+    setShowPass(!showPass);
+  };
+
+  // const handleForgotPassword = () => {
+
+  //   sendPasswordResetEmail(auth, email)
+  //     .then(() => {
+  //       // Password reset email sent!
+  //       // ..
+  //     })
+  //     .catch((error) => {
+  //       const errorCode = error.code;
+  //       const errorMessage = error.message;
+  //       // ..
+  //     });
+  // };
+
+  const handleFogotPass = () => {
+    setForgotPass(true);
   };
 
   return (
     <>
-      <div className="flex min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div>
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          success={true}
+        />
+      </div>
+
+      <div className="flex min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8 ">
         <div className="w-full max-w-md space-y-8">
           <div>
             <h1 className="text-lg font-semibold text-orange-600 uppercase">
               MIDAS HR SOFTWARE ACCESS.
             </h1>
             <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-              {isLogin ? "Sign in to your account" : "Create an account"}
+              {!forgotPass
+                ? isLogin
+                  ? "Sign in to your account"
+                  : "Create an account"
+                : "Reset your Pasword"}
             </h2>
             <p className="mt-2 text-center text-sm text-gray-600">
               Or
@@ -63,9 +152,11 @@ const Register = ({ isLogin, setIsLogin }) => {
                 className="font-medium text-orange-600 hover:text-orange-500"
               >
                 &nbsp;
-                {isLogin
-                  ? "Signup if you are new."
-                  : "Login if you have account"}
+                {!forgotPass
+                  ? isLogin
+                    ? "Signup if you are new."
+                    : "Login if you have account"
+                  : "Login"}
               </NavLink>
             </p>
           </div>
@@ -75,13 +166,14 @@ const Register = ({ isLogin, setIsLogin }) => {
                 <label htmlFor="email-address" className="sr-only">
                   Email address
                 </label>
+
                 <input
                   id="email-address"
                   name="email"
                   type="email"
                   autoComplete="email"
                   required
-                  className="relative block w-full appearance-none rounded-none rounded-t-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-orange-500 focus:outline-none focus:ring-orange-500 sm:text-sm"
+                  className="relative block w-full appearance-none mb-5 border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-orange-500 focus:outline-none focus:ring-orange-500 sm:text-sm"
                   placeholder="Email address"
                   value={formData.email}
                   onChange={(event) =>
@@ -92,33 +184,42 @@ const Register = ({ isLogin, setIsLogin }) => {
                   }
                 />
               </div>
-              <div>
-                <label htmlFor="password" className="sr-only">
-                  Password
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  className="relative block w-full appearance-none rounded-none rounded-b-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-orange-500 focus:outline-none focus:ring-orange-500 sm:text-sm"
-                  placeholder="Password"
-                  value={formData.password}
-                  onChange={(event) =>
-                    setFormData({
-                      ...formData,
-                      password: event.target.value,
-                    })
-                  }
-                />
-              </div>
+              {!forgotPass && (
+                <div className="relative">
+                  <label htmlFor="password" className="sr-only">
+                    Password
+                  </label>
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPass ? "text" : "password"}
+                    autoComplete="current-password"
+                    required
+                    className="relative block w-full appearance-none  border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-orange-500 focus:outline-none focus:ring-orange-500 sm:text-sm"
+                    placeholder="Password"
+                    value={formData.password}
+                    onChange={(event) =>
+                      setFormData({
+                        ...formData,
+                        password: event.target.value,
+                      })
+                    }
+                  />
+                  <div
+                    className="absolute top-3 right-3 bottom-0 cursor-pointer"
+                    onClick={handleShowPassword}
+                  >
+                    {showPass ? <HiEye /> : <HiEyeOff />}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="flex items-center justify-between">
               <div className="text-sm">
                 <NavLink
                   to="/"
+                  onClick={handleFogotPass}
                   className="font-medium text-orange-600 hover:text-orange-500"
                 >
                   Forgot your password?
@@ -137,7 +238,14 @@ const Register = ({ isLogin, setIsLogin }) => {
                     aria-hidden="true"
                   />
                 </span>
-                {isLogin ? "Sign in" : "Signup"}
+                {/* {loading && (
+                  <div className="animate-spin h-5 w-5 mr-3 border-white rounded-full text-white border-2 border-solid border-t-transparent"></div>
+                )} */}
+                {!forgotPass
+                  ? isLogin
+                    ? "Sign in"
+                    : "Signup"
+                  : "Forgot Password"}
               </button>
             </div>
           </form>

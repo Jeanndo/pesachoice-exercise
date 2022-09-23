@@ -14,6 +14,7 @@ const navigation = [
 export default function Example() {
   const [open, setOpen] = useState(false);
   const [isLogin, setIsLogin] = useState(false);
+  const [forgotPass, setForgotPass] = useState(false);
 
   return (
     <Fragment>
@@ -22,6 +23,8 @@ export default function Example() {
         setOpen={setOpen}
         isLogin={isLogin}
         setIsLogin={setIsLogin}
+        forgotPass={forgotPass}
+        setForgotPass={setForgotPass}
       />
       <div className="relative overflow-hidden bg-white">
         <div className="mx-auto max-w-7xl">
