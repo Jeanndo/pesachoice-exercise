@@ -1,6 +1,14 @@
 import { Fragment } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { auth } from "./../../../config/firebse";
+import {
+  onAuthStateChanged,
+  updateEmail,
+  sendEmailVerification,
+  signOut,
+} from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 
 const user = {
   name: "Tom Cook",
@@ -25,17 +33,42 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function Example() {
+const Dasboard = () => {
+  const navigate = useNavigate();
+  // onAuthStateChanged(auth, (user) => {
+  //   if (user) {
+  //     const uid = user.uid;
+  //     console.table(user, uid);
+  //   } else {
+  //     console.log("user logged out");
+  //   }
+  // });
+
+  // updateEmail(auth.currentUser, "jado@pesachoice.com")
+  //   .then((info) => {
+  //     console.log(info);
+  //   })
+  //   .catch((error) => {
+  //     console.log(error);
+  //   });
+
+  // sendEmailVerification(auth.currentUser).then((info) => {
+  //   console.log("Email verification sent", info);
+  // });
+
+  const handleLogout = () => {
+    signOut(auth)
+      .then(() => {
+        console.log("Sign-out successful.");
+        navigate("/");
+      })
+      .catch((error) => {
+        console.log(error.message);
+      });
+  };
+
   return (
     <>
-      {/*
-        This example requires updating your template:
-
-        ```
-        <html class="h-full bg-gray-100">
-        <body class="h-full">
-        ```
-      */}
       <div className="min-h-full">
         <Disclosure as="nav" className="bg-gray-800">
           {({ open }) => (
@@ -170,6 +203,7 @@ export default function Example() {
                         alt=""
                       />
                     </div>
+
                     <div className="ml-3">
                       <div className="text-base font-medium leading-none text-white">
                         {user.name}
@@ -192,6 +226,7 @@ export default function Example() {
                         key={item.name}
                         as="a"
                         href={item.href}
+                        onClick={handleLogout}
                         className="block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
                       >
                         {item.name}
@@ -209,6 +244,7 @@ export default function Example() {
             <h1 className="text-3xl font-bold tracking-tight text-gray-900">
               Dashboard
             </h1>
+            <div></div>
           </div>
         </header>
         <main>
@@ -223,4 +259,6 @@ export default function Example() {
       </div>
     </>
   );
-}
+};
+
+export default Dasboard;

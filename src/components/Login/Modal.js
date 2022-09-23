@@ -51,12 +51,18 @@ const LoginModal = (props) => {
                         as="h3"
                         className="text-lg font-medium leading-6 text-gray-900"
                       >
-                        {props.isLogin ? " LOGIN" : "SIGNUP"}
+                        {!props.forgotPass
+                          ? props.isLogin
+                            ? " LOGIN"
+                            : "SIGNUP"
+                          : "RESET PASSWORD"}
                       </Dialog.Title>
                       <div className="mt-2">
                         <Login
                           isLogin={props.isLogin}
                           setIsLogin={props.setIsLogin}
+                          forgotPass={props.forgotPass}
+                          setForgotPass={props.setForgotPass}
                         />
                       </div>
                     </div>
