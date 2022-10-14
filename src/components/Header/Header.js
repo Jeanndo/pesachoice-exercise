@@ -72,6 +72,7 @@ export default function Example() {
                       </NavLink>
                     ))}
                     <NavLink
+                      id="login-btn"
                       to="/"
                       onClick={() => setOpen(true)}
                       className="font-medium text-orange-600 hover:text-orange-800"
