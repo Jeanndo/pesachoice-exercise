@@ -21,7 +21,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "testcafe chrome tests/ ./src/tests/my-test.ts",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -45,6 +45,8 @@
   "devDependencies": {
     "autoprefixer": "^10.4.11",
     "postcss": "^8.4.16",
-    "tailwindcss": "^3.1.8"
+    "tailwindcss": "^3.1.8",
+    "testcafe": "^2.0.1",
+    "typescript": "^4.8.4"
   }
 }
